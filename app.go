@@ -38,7 +38,8 @@ type Config struct {
 	}
 }
 
-// To be useful and testable, App will needgo methods that initialize and run the application.
+// To be useful and testable, App will need methods that initialize
+// and run the application.
 
 // Initialize will connect to the database
 func (a *App) Initialize() (err error) {
@@ -49,12 +50,13 @@ func (a *App) Initialize() (err error) {
 		return errors.Wrap(err, "configuration decode failed")
 	}
 
-	// log configuration for debugging
+	// Log configuration for debugging
 	if cfg.Debug {
 		prettyCfg, _ := json.MarshalIndent(cfg, "", "  ")
 		log.Printf("Configuration: \n%v", string(prettyCfg))
 	}
 
+	// Connect to the database
 	a.DB, err = sql.Open("postgres", "postgres://"+cfg.SQL.User+":"+cfg.SQL.Password+"@localhost/"+cfg.SQL.Database+"?sslmode=disable")
 	if err != nil {
 		return errors.Wrap(err, "database connection failed")
