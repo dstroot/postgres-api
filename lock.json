@@ -1,6 +1,14 @@
 {
-    "memo": "807bf0804f3bc65dc6e923c726b567b3f0cb4351a3309de46e86a812c4d6594c",
+    "memo": "0385f15aa05802d63a9ffb4e1fc9246a507a9b3def2aa172065eb287bc600742",
     "projects": [
+        {
+            "name": "github.com/codegangsta/negroni",
+            "branch": "master",
+            "revision": "61dbefc515b4dede6eb2de7df1e54d49edce892d",
+            "packages": [
+                "."
+            ]
+        },
         {
             "name": "github.com/gorilla/context",
             "version": "v1.1",
@@ -11,8 +19,8 @@
         },
         {
             "name": "github.com/gorilla/mux",
-            "version": "v1.3.0",
-            "revision": "392c28fe23e1c45ddba891b0320b3b5df220beea",
+            "branch": "master",
+            "revision": "94e7d24fd285520f3d12ae998f7fdd6b5393d453",
             "packages": [
                 "."
             ]
@@ -31,6 +39,14 @@
             "revision": "726cc8b906e3d31c70a9671c90a13716a8d3f50d",
             "packages": [
                 "autoload"
+            ]
+        },
+        {
+            "name": "github.com/julienschmidt/httprouter",
+            "version": "v1.1",
+            "revision": "8c199fb6259ffc1af525cc3ad52ee60ba8359669",
+            "packages": [
+                "."
             ]
         },
         {

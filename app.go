@@ -9,9 +9,11 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/gorilla/mux"
+	"github.com/codegangsta/negroni"
+	"github.com/dstroot/postgres-api/models"
 	env "github.com/joeshaw/envdecode"
 	_ "github.com/joho/godotenv/autoload"
+	"github.com/julienschmidt/httprouter"
 	_ "github.com/lib/pq"
 	"github.com/pkg/errors"
 )
@@ -22,7 +24,7 @@ var (
 
 // App struct exposes references to the router, server and database that the application uses.
 type App struct {
-	Router *mux.Router
+	Router *httprouter.Router
 	DB     *sql.DB
 	Server *http.Server
 }
@@ -90,12 +92,29 @@ func (a *App) Initialize() (err error) {
 		log.Printf("Connection: %s\n", connString)
 	}
 
-	a.Router = mux.NewRouter()
+	/**
+	 * Router
+	 */
+
+	a.Router = httprouter.New()
 	a.initializeRoutes()
+
+	/**
+	 * Negroni Middleware Stack
+	 */
+
+	n := negroni.New()
+	n.Use(negroni.NewRecovery())
+	n.Use(negroni.NewLogger())
+	n.UseHandler(a.Router)
+
+	/**
+	 * Server
+	 */
 
 	a.Server = &http.Server{
 		Addr:           ":" + cfg.Port,
-		Handler:        a.Router, // pass router
+		Handler:        n, // pass router
 		ReadTimeout:    5 * time.Second,
 		WriteTimeout:   10 * time.Second,
 		IdleTimeout:    120 * time.Second, // Go 1.8
@@ -107,11 +126,11 @@ func (a *App) Initialize() (err error) {
 
 // Intialize our routes
 func (a *App) initializeRoutes() {
-	a.Router.HandleFunc("/products", a.getProducts).Methods("GET")
-	a.Router.HandleFunc("/product", a.createProduct).Methods("POST")
-	a.Router.HandleFunc("/product/{id:[0-9]+}", a.getProduct).Methods("GET")
-	a.Router.HandleFunc("/product/{id:[0-9]+}", a.updateProduct).Methods("PUT")
-	a.Router.HandleFunc("/product/{id:[0-9]+}", a.deleteProduct).Methods("DELETE")
+	a.Router.GET("/products", a.getProducts)
+	a.Router.POST("/product", a.createProduct)
+	a.Router.GET("/product/:id", a.getProduct)
+	a.Router.PUT("/product/:id", a.updateProduct)
+	a.Router.DELETE("/product/:id", a.deleteProduct)
 }
 
 // This handler retrieves the id of the product to be fetched from the requested
@@ -124,16 +143,15 @@ func (a *App) initializeRoutes() {
 //
 // This method uses respondWithError and respondWithJSON functions to
 // process errors and normal responses. These functions can be implemented as follows:
-func (a *App) getProduct(w http.ResponseWriter, r *http.Request) {
-	vars := mux.Vars(r)
-	id, err := strconv.Atoi(vars["id"])
+func (a *App) getProduct(w http.ResponseWriter, r *http.Request, param httprouter.Params) {
+	id, err := strconv.Atoi(param.ByName("id"))
 	if err != nil {
 		respondWithError(w, http.StatusBadRequest, "Invalid product ID")
 		return
 	}
 
-	p := product{ID: id}
-	if err := p.getProduct(a.DB); err != nil {
+	p := model.Product{ID: id}
+	if err := p.GetProduct(a.DB); err != nil {
 		switch err {
 		case sql.ErrNoRows:
 			respondWithError(w, http.StatusNotFound, "Product not found")
@@ -150,9 +168,10 @@ func (a *App) getProduct(w http.ResponseWriter, r *http.Request) {
 // fetch count number of products, starting at position start in the database.
 // By default, start is set to 0 and count is set to 10. If these parameters
 // aren't provided, this handler will respond with the first 10 products.
-func (a *App) getProducts(w http.ResponseWriter, r *http.Request) {
-	count, _ := strconv.Atoi(r.FormValue("count"))
-	start, _ := strconv.Atoi(r.FormValue("start"))
+func (a *App) getProducts(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
+	queryValues := r.URL.Query()
+	count, _ := strconv.Atoi(queryValues.Get("count"))
+	start, _ := strconv.Atoi(queryValues.Get("start"))
 
 	if count > 10 || count < 1 {
 		count = 10
@@ -161,7 +180,7 @@ func (a *App) getProducts(w http.ResponseWriter, r *http.Request) {
 		start = 0
 	}
 
-	products, err := getProducts(a.DB, start, count)
+	products, err := model.GetProducts(a.DB, start, count)
 	if err != nil {
 		respondWithError(w, http.StatusInternalServerError, err.Error())
 		return
@@ -173,8 +192,8 @@ func (a *App) getProducts(w http.ResponseWriter, r *http.Request) {
 // This handler assumes that the request body is a JSON object containing the
 // details of the product to be created. It extracts that object into a product
 // and uses the createProduct method to create a product with these details.
-func (a *App) createProduct(w http.ResponseWriter, r *http.Request) {
-	var p product
+func (a *App) createProduct(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
+	var p model.Product
 	decoder := json.NewDecoder(r.Body)
 	if err := decoder.Decode(&p); err != nil {
 		respondWithError(w, http.StatusBadRequest, "Invalid request payload")
@@ -182,7 +201,7 @@ func (a *App) createProduct(w http.ResponseWriter, r *http.Request) {
 	}
 	defer r.Body.Close()
 
-	if err := p.createProduct(a.DB); err != nil {
+	if err := p.CreateProduct(a.DB); err != nil {
 		respondWithError(w, http.StatusInternalServerError, err.Error())
 		return
 	}
@@ -193,15 +212,14 @@ func (a *App) createProduct(w http.ResponseWriter, r *http.Request) {
 // This handler extracts the product details from the request body. It also
 // extracts the id from the URL and uses the id and the body to update the
 // product in the database.
-func (a *App) updateProduct(w http.ResponseWriter, r *http.Request) {
-	vars := mux.Vars(r)
-	id, err := strconv.Atoi(vars["id"])
+func (a *App) updateProduct(w http.ResponseWriter, r *http.Request, param httprouter.Params) {
+	id, err := strconv.Atoi(param.ByName("id"))
 	if err != nil {
 		respondWithError(w, http.StatusBadRequest, "Invalid product ID")
 		return
 	}
 
-	var p product
+	var p model.Product
 	decoder := json.NewDecoder(r.Body)
 	if err := decoder.Decode(&p); err != nil {
 		respondWithError(w, http.StatusBadRequest, "Invalid resquest payload")
@@ -210,7 +228,7 @@ func (a *App) updateProduct(w http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
 	p.ID = id
 
-	if err := p.updateProduct(a.DB); err != nil {
+	if err := p.UpdateProduct(a.DB); err != nil {
 		respondWithError(w, http.StatusInternalServerError, err.Error())
 		return
 	}
@@ -220,16 +238,15 @@ func (a *App) updateProduct(w http.ResponseWriter, r *http.Request) {
 
 // This handler extracts the id from the requested URL and uses it to delete
 // the corresponding product from the database.
-func (a *App) deleteProduct(w http.ResponseWriter, r *http.Request) {
-	vars := mux.Vars(r)
-	id, err := strconv.Atoi(vars["id"])
+func (a *App) deleteProduct(w http.ResponseWriter, r *http.Request, param httprouter.Params) {
+	id, err := strconv.Atoi(param.ByName("id"))
 	if err != nil {
-		respondWithError(w, http.StatusBadRequest, "Invalid Product ID")
+		respondWithError(w, http.StatusBadRequest, "Invalid product ID")
 		return
 	}
 
-	p := product{ID: id}
-	if err := p.deleteProduct(a.DB); err != nil {
+	p := model.Product{ID: id}
+	if err := p.DeleteProduct(a.DB); err != nil {
 		respondWithError(w, http.StatusInternalServerError, err.Error())
 		return
 	}

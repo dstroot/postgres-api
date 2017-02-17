@@ -1,5 +1,8 @@
 {
     "dependencies": {
+        "github.com/codegangsta/negroni": {
+            "branch": "master"
+        },
         "github.com/gorilla/mux": {
             "branch": "master"
         }
