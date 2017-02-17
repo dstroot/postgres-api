@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"log"
 	"net/http"
+	"os"
 	"strconv"
 	"time"
 
@@ -19,20 +20,22 @@ var (
 	cfg Config // global configuration
 )
 
-// App struct exposes references to the router and the database that the application uses.
+// App struct exposes references to the router, server and database that the application uses.
 type App struct {
 	Router *mux.Router
 	DB     *sql.DB
+	Server *http.Server
 }
 
 // Config contains the configuration from environment variables
 type Config struct {
-	Debug bool   `env:"DEBUG,default=true"`
-	Port  string `env:"PORT,default=8000"`
+	HostName string
+	Debug    bool   `env:"DEBUG,default=true"`
+	Port     string `env:"PORT,default=8000"`
 
 	SQL struct {
-		// Host     string `env:"MSSQL_HOST,default=localhost"`
-		// Port     string `env:"MSSQL_PORT,default=1433"`
+		Host     string `env:"SQL_HOST,default=localhost"`
+		Port     string `env:"SQL_PORT,default=5432"`
 		User     string `env:"SQL_USER,default=postgres"`
 		Password string `env:"SQL_PASSWORD,default=mysecretpassword"`
 		Database string `env:"SQL_DATABASE,default=products"`
@@ -51,13 +54,21 @@ func (a *App) Initialize() (err error) {
 		return errors.Wrap(err, "configuration decode failed")
 	}
 
+	// configure hostame
+	cfg.HostName, _ = os.Hostname()
+
 	// Log configuration for debugging
 	if cfg.Debug {
 		prettyCfg, _ := json.MarshalIndent(cfg, "", "  ")
 		log.Printf("Configuration: \n%v", string(prettyCfg))
 	}
 
-	connString := "postgres://" + cfg.SQL.User + ":" + cfg.SQL.Password + "@localhost:32768/" + cfg.SQL.Database + "?sslmode=disable"
+	connString := "postgres://" + cfg.SQL.User +
+		":" + cfg.SQL.Password +
+		"@" + cfg.SQL.Host +
+		":" + cfg.SQL.Port +
+		"/" + cfg.SQL.Database +
+		"?sslmode=disable"
 
 	// Connect to the database
 	a.DB, err = sql.Open("postgres", connString)
@@ -82,13 +93,8 @@ func (a *App) Initialize() (err error) {
 	a.Router = mux.NewRouter()
 	a.initializeRoutes()
 
-	return nil
-}
-
-// Run will run the app
-func (a *App) Run(addr string) {
-	s := &http.Server{
-		Addr:           ":" + addr,
+	a.Server = &http.Server{
+		Addr:           ":" + cfg.Port,
 		Handler:        a.Router, // pass router
 		ReadTimeout:    5 * time.Second,
 		WriteTimeout:   10 * time.Second,
@@ -96,7 +102,7 @@ func (a *App) Run(addr string) {
 		MaxHeaderBytes: 1 << 20,
 	}
 
-	log.Fatal(s.ListenAndServe())
+	return nil
 }
 
 // Intialize our routes
