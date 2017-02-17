@@ -1,0 +1,53 @@
+{
+    "memo": "807bf0804f3bc65dc6e923c726b567b3f0cb4351a3309de46e86a812c4d6594c",
+    "projects": [
+        {
+            "name": "github.com/gorilla/context",
+            "version": "v1.1",
+            "revision": "1ea25387ff6f684839d82767c1733ff4d4d15d0a",
+            "packages": [
+                "."
+            ]
+        },
+        {
+            "name": "github.com/gorilla/mux",
+            "version": "v1.3.0",
+            "revision": "392c28fe23e1c45ddba891b0320b3b5df220beea",
+            "packages": [
+                "."
+            ]
+        },
+        {
+            "name": "github.com/joeshaw/envdecode",
+            "branch": "master",
+            "revision": "32118ea5f56d5358408e78d150be1843a695e35c",
+            "packages": [
+                "."
+            ]
+        },
+        {
+            "name": "github.com/joho/godotenv",
+            "version": "v1.1",
+            "revision": "726cc8b906e3d31c70a9671c90a13716a8d3f50d",
+            "packages": [
+                "autoload"
+            ]
+        },
+        {
+            "name": "github.com/lib/pq",
+            "branch": "master",
+            "revision": "ba5d4f7a35561e22fbdf7a39aa0070f4d460cfc0",
+            "packages": [
+                "."
+            ]
+        },
+        {
+            "name": "github.com/pkg/errors",
+            "version": "v0.8.0",
+            "revision": "645ef00459ed84a119197bfb8d8205042c6df63d",
+            "packages": [
+                "."
+            ]
+        }
+    ]
+}
