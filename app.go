@@ -6,6 +6,7 @@ import (
 	"log"
 	"net/http"
 	"strconv"
+	"time"
 
 	"github.com/gorilla/mux"
 	env "github.com/joeshaw/envdecode"
@@ -56,10 +57,26 @@ func (a *App) Initialize() (err error) {
 		log.Printf("Configuration: \n%v", string(prettyCfg))
 	}
 
+	connString := "postgres://" + cfg.SQL.User + ":" + cfg.SQL.Password + "@localhost:32768/" + cfg.SQL.Database + "?sslmode=disable"
+
 	// Connect to the database
-	a.DB, err = sql.Open("postgres", "postgres://"+cfg.SQL.User+":"+cfg.SQL.Password+"@localhost/"+cfg.SQL.Database+"?sslmode=disable")
+	a.DB, err = sql.Open("postgres", connString)
 	if err != nil {
 		return errors.Wrap(err, "database connection failed")
+	}
+
+	// The first actual connection to the underlying datastore will be
+	// established lazily, when it's needed for the first time. If you want
+	// to check right away that the database is available and accessible
+	// (for example, check that you can establish a network connection and log
+	// in), use database.DB.Ping().
+	err = a.DB.Ping()
+	if err != nil {
+		return errors.Wrap(err, "error pinging database")
+	}
+
+	if cfg.Debug {
+		log.Printf("Connection: %s\n", connString)
 	}
 
 	a.Router = mux.NewRouter()
@@ -70,7 +87,16 @@ func (a *App) Initialize() (err error) {
 
 // Run will run the app
 func (a *App) Run(addr string) {
-	log.Fatal(http.ListenAndServe(":"+addr, a.Router))
+	s := &http.Server{
+		Addr:           ":" + addr,
+		Handler:        a.Router, // pass router
+		ReadTimeout:    5 * time.Second,
+		WriteTimeout:   10 * time.Second,
+		IdleTimeout:    120 * time.Second, // Go 1.8
+		MaxHeaderBytes: 1 << 20,
+	}
+
+	log.Fatal(s.ListenAndServe())
 }
 
 // Intialize our routes
