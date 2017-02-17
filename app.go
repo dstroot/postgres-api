@@ -8,7 +8,14 @@ import (
 	"strconv"
 
 	"github.com/gorilla/mux"
+	env "github.com/joeshaw/envdecode"
+	_ "github.com/joho/godotenv/autoload"
 	_ "github.com/lib/pq"
+	"github.com/pkg/errors"
+)
+
+var (
+	cfg Config // global configuration
 )
 
 // App struct exposes references to the router and the database that the application uses.
@@ -17,18 +24,46 @@ type App struct {
 	DB     *sql.DB
 }
 
+// Config contains the configuration from environment variables
+type Config struct {
+	Debug bool   `env:"DEBUG,default=true"`
+	Port  string `env:"PORT,default=8000"`
+
+	SQL struct {
+		// Host     string `env:"MSSQL_HOST,default=localhost"`
+		// Port     string `env:"MSSQL_PORT,default=1433"`
+		User     string `env:"SQL_USER,default=postgres"`
+		Password string `env:"SQL_PASSWORD,default=mysecretpassword"`
+		Database string `env:"SQL_DATABASE,default=products"`
+	}
+}
+
 // To be useful and testable, App will needgo methods that initialize and run the application.
 
 // Initialize will connect to the database
-func (a *App) Initialize(user, password, dbname string) {
-	var err error
-	a.DB, err = sql.Open("postgres", "postgres://"+user+":"+password+"@localhost/"+dbname+"?sslmode=disable")
+func (a *App) Initialize() (err error) {
+
+	// Read configuration from env variables
+	err = env.Decode(&cfg)
 	if err != nil {
-		log.Fatal(err)
+		return errors.Wrap(err, "configuration decode failed")
+	}
+
+	// log configuration for debugging
+	if cfg.Debug {
+		prettyCfg, _ := json.MarshalIndent(cfg, "", "  ")
+		log.Printf("Configuration: \n%v", string(prettyCfg))
+	}
+
+	a.DB, err = sql.Open("postgres", "postgres://"+cfg.SQL.User+":"+cfg.SQL.Password+"@localhost/"+cfg.SQL.Database+"?sslmode=disable")
+	if err != nil {
+		return errors.Wrap(err, "database connection failed")
 	}
 
 	a.Router = mux.NewRouter()
 	a.initializeRoutes()
+
+	return nil
 }
 
 // Run will run the app

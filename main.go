@@ -1,8 +1,12 @@
 package main
 
+import "log"
+
 func main() {
-	initialize()
 	a := App{}
-	a.Initialize(cfg.SQL.User, cfg.SQL.Password, cfg.SQL.Database)
+	err := a.Initialize()
+	if err != nil {
+		log.Fatal(err)
+	}
 	a.Run(cfg.Port)
 }

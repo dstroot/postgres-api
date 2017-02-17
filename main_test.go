@@ -24,19 +24,11 @@ var a App
 // We define a global variable a that will represent the application we want to test. While calling the Initialize method, we assume that the access details for the database will be stored in environment variables named TEST_DB_USERNAME, TEST_DB_PASSWORD, and TEST_DB_NAME.
 
 func TestMain(m *testing.M) {
-	// a = App{}
-	// a.Initialize(
-	// 	os.Getenv("TEST_DB_USERNAME"),
-	// 	os.Getenv("TEST_DB_PASSWORD"),
-	// 	os.Getenv("TEST_DB_NAME"))
-
-	initialize()
 	a = App{}
-	a.Initialize(cfg.SQL.User, cfg.SQL.Password, cfg.SQL.Database)
-	// 	os.Getenv("APP_DB_USERNAME"),
-	// 	os.Getenv("APP_DB_PASSWORD"),
-	// 	os.Getenv("APP_DB_NAME")
-	// )
+	err := a.Initialize()
+	if err != nil {
+		log.Fatal(err)
+	}
 
 	ensureTableExists()
 
