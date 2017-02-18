@@ -1,4 +1,4 @@
-package main
+package api
 
 import (
 	"database/sql"
@@ -12,25 +12,24 @@ import (
 	"github.com/codegangsta/negroni"
 	"github.com/dstroot/postgres-api/models"
 	env "github.com/joeshaw/envdecode"
+	// Load environment vars
 	_ "github.com/joho/godotenv/autoload"
 	"github.com/julienschmidt/httprouter"
+	// Postgres driver
 	_ "github.com/lib/pq"
 	"github.com/pkg/errors"
 )
 
-var (
-	cfg Config // global configuration
-)
-
-// App struct exposes references to the router, server and database that the application uses.
+// App struct exposes references to the router, server, database
+// and configuration that the application uses.
 type App struct {
 	Router *httprouter.Router
 	DB     *sql.DB
 	Server *http.Server
+	Cfg    config
 }
 
-// Config contains the configuration from environment variables
-type Config struct {
+type config struct {
 	HostName string
 	Debug    bool   `env:"DEBUG,default=true"`
 	Port     string `env:"PORT,default=8000"`
@@ -51,25 +50,25 @@ type Config struct {
 func (a *App) Initialize() (err error) {
 
 	// Read configuration from env variables
-	err = env.Decode(&cfg)
+	err = env.Decode(&a.Cfg)
 	if err != nil {
 		return errors.Wrap(err, "configuration decode failed")
 	}
 
 	// configure hostame
-	cfg.HostName, _ = os.Hostname()
+	a.Cfg.HostName, _ = os.Hostname()
 
 	// Log configuration for debugging
-	if cfg.Debug {
-		prettyCfg, _ := json.MarshalIndent(cfg, "", "  ")
+	if a.Cfg.Debug {
+		prettyCfg, _ := json.MarshalIndent(a.Cfg, "", "  ")
 		log.Printf("Configuration: \n%v", string(prettyCfg))
 	}
 
-	connString := "postgres://" + cfg.SQL.User +
-		":" + cfg.SQL.Password +
-		"@" + cfg.SQL.Host +
-		":" + cfg.SQL.Port +
-		"/" + cfg.SQL.Database +
+	connString := "postgres://" + a.Cfg.SQL.User +
+		":" + a.Cfg.SQL.Password +
+		"@" + a.Cfg.SQL.Host +
+		":" + a.Cfg.SQL.Port +
+		"/" + a.Cfg.SQL.Database +
 		"?sslmode=disable"
 
 	// Connect to the database
@@ -88,7 +87,7 @@ func (a *App) Initialize() (err error) {
 		return errors.Wrap(err, "error pinging database")
 	}
 
-	if cfg.Debug {
+	if a.Cfg.Debug {
 		log.Printf("Connection: %s\n", connString)
 	}
 
@@ -113,7 +112,7 @@ func (a *App) Initialize() (err error) {
 	 */
 
 	a.Server = &http.Server{
-		Addr:           ":" + cfg.Port,
+		Addr:           ":" + a.Cfg.Port,
 		Handler:        n, // pass router
 		ReadTimeout:    5 * time.Second,
 		WriteTimeout:   10 * time.Second,
@@ -151,7 +150,7 @@ func (a *App) getProduct(w http.ResponseWriter, r *http.Request, param httproute
 	}
 
 	p := model.Product{ID: id}
-	if err := p.GetProduct(a.DB); err != nil {
+	if err := p.Get(a.DB); err != nil {
 		switch err {
 		case sql.ErrNoRows:
 			respondWithError(w, http.StatusNotFound, "Product not found")
@@ -180,7 +179,7 @@ func (a *App) getProducts(w http.ResponseWriter, r *http.Request, _ httprouter.P
 		start = 0
 	}
 
-	products, err := model.GetProducts(a.DB, start, count)
+	products, err := model.GetMany(a.DB, start, count)
 	if err != nil {
 		respondWithError(w, http.StatusInternalServerError, err.Error())
 		return
@@ -201,7 +200,7 @@ func (a *App) createProduct(w http.ResponseWriter, r *http.Request, _ httprouter
 	}
 	defer r.Body.Close()
 
-	if err := p.CreateProduct(a.DB); err != nil {
+	if err := p.Post(a.DB); err != nil {
 		respondWithError(w, http.StatusInternalServerError, err.Error())
 		return
 	}
@@ -222,13 +221,13 @@ func (a *App) updateProduct(w http.ResponseWriter, r *http.Request, param httpro
 	var p model.Product
 	decoder := json.NewDecoder(r.Body)
 	if err := decoder.Decode(&p); err != nil {
-		respondWithError(w, http.StatusBadRequest, "Invalid resquest payload")
+		respondWithError(w, http.StatusBadRequest, "Invalid request payload")
 		return
 	}
 	defer r.Body.Close()
 	p.ID = id
 
-	if err := p.UpdateProduct(a.DB); err != nil {
+	if err := p.Put(a.DB); err != nil {
 		respondWithError(w, http.StatusInternalServerError, err.Error())
 		return
 	}
@@ -246,7 +245,7 @@ func (a *App) deleteProduct(w http.ResponseWriter, r *http.Request, param httpro
 	}
 
 	p := model.Product{ID: id}
-	if err := p.DeleteProduct(a.DB); err != nil {
+	if err := p.Delete(a.DB); err != nil {
 		respondWithError(w, http.StatusInternalServerError, err.Error())
 		return
 	}

@@ -1,26 +1,10 @@
 {
-    "memo": "0385f15aa05802d63a9ffb4e1fc9246a507a9b3def2aa172065eb287bc600742",
+    "memo": "3bbc99a525eb5ee715ba62255e1ca844886f949a5be85961d9f8d3d737095024",
     "projects": [
         {
             "name": "github.com/codegangsta/negroni",
             "branch": "master",
-            "revision": "61dbefc515b4dede6eb2de7df1e54d49edce892d",
-            "packages": [
-                "."
-            ]
-        },
-        {
-            "name": "github.com/gorilla/context",
-            "version": "v1.1",
-            "revision": "1ea25387ff6f684839d82767c1733ff4d4d15d0a",
-            "packages": [
-                "."
-            ]
-        },
-        {
-            "name": "github.com/gorilla/mux",
-            "branch": "master",
-            "revision": "94e7d24fd285520f3d12ae998f7fdd6b5393d453",
+            "revision": "3c4d1f44e5d9d1eb5acf3c661a17aaa837d1a067",
             "packages": [
                 "."
             ]
