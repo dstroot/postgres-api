@@ -1,3 +1,32 @@
+// postgres-api : a very simple example of a golang API on
+// top of a Postgres table
+//
+// This program is written for go 1.8 and takes advantage of the
+// ability to drain connections and do a graceful shutdown.
+//
+// This API uses:
+// * Julien Schmidt's httprouter [package](https://github.com/julienschmidt/httprouter).
+//   In contrast to the default mux of Go's net/http package, this router
+//   supports variables in the routing pattern and matches against the request
+//   method. The router is optimized for high performance and a small memory
+//   footprint.
+// * Negroni middleware [package](https://github.com/urfave/negroni).
+//   Negroni is an idiomatic approach to web middleware in Go. It is tiny,
+//   non-intrusive, and encourages use of net/http Handlers.
+// * Godotenv [package](https://github.com/joho/godotenv) loads env vars
+//   from a .env file. Storing configuration in the environment is one of the
+//   tenets of a twelve-factor app. But it is not always practical to set
+//   environment variables on development machines or continuous integration
+//   servers where multiple projects are run. Godotenv load variables from
+//   a .env file into ENV when the environment is bootstrapped.
+// * Envdecode [package](https://github.com/joeshaw/envdecode). Envdecode
+//   uses struct tags to map environment variables to fields, allowing you
+//   you use any names you want for environment variables. In this way you
+//   load the environment variables into a config struct once and can then
+//   use them throughout your program.
+// * Errors [package](https://github.com/pkg/errors).  The errors package
+//   allows you to add context to the failure path of your code in a way
+//   that does not destroy the original value of the error.
 package main
 
 import (
