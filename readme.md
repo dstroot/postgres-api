@@ -18,7 +18,10 @@ This program is written for go 1.8 and takes advantage of the ability to drain c
 ## Install
 
 ```
-go get github.com/dstroot/postgres-api
+❯ go get github.com/dstroot/postgres-api
+❯ cd $GOPATH/src/github.com/dstroot/postgres-api
+❯ go test -v
+❯ go build && ./postgres-api
 ```
 
 ## License
@@ -26,6 +29,8 @@ go get github.com/dstroot/postgres-api
 MIT.
 
 ### Operating
+
+You need a postgres database and a database created to use.  Set the .env parameters to point to your postgres installation.  Run `go test` to initialize the table. After that you should be able to build and run the program.
 
 Run psql cli:
 
