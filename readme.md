@@ -20,6 +20,7 @@ This program is written for go 1.8 and takes advantage of the ability to drain c
 ```
 ❯ go get github.com/dstroot/postgres-api
 ❯ cd $GOPATH/src/github.com/dstroot/postgres-api
+❯ dep ensure -update
 ❯ go test -v
 ❯ go build && ./postgres-api
 ```
@@ -62,5 +63,5 @@ $ go build && ./postgres-api
 
 ### References
 
-https://tylerchr.blog/golang-18-whats-coming/
-https://dave.cheney.net/2016/06/12/stack-traces-and-the-errors-package
+* https://tylerchr.blog/golang-18-whats-coming/
+* https://dave.cheney.net/2016/06/12/stack-traces-and-the-errors-package
