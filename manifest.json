@@ -1,9 +1,6 @@
 {
     "dependencies": {
-        "github.com/codegangsta/negroni": {
-            "branch": "master"
-        },
-        "github.com/gorilla/mux": {
+        "github.com/pkg/errors": {
             "branch": "master"
         }
     }

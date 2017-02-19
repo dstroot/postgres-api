@@ -9,9 +9,9 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/codegangsta/negroni"
 	"github.com/dstroot/postgres-api/models"
 	env "github.com/joeshaw/envdecode"
+	"github.com/urfave/negroni"
 	// Load environment vars
 	_ "github.com/joho/godotenv/autoload"
 	"github.com/julienschmidt/httprouter"
