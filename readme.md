@@ -12,6 +12,8 @@ This API uses:
 * Envdecode [package](https://github.com/joeshaw/envdecode). Envdecode uses struct tags to map environment variables to fields, allowing you you use any names you want for environment variables. In this way you load the environment variables into a config struct once and can then use them throughout your program.
 * Errors [package](https://github.com/pkg/errors).  The errors package allows you to add context to the failure path of your code in a way that does not destroy the original value of the error.
 
+This program is written for go 1.8 and takes advantage of the ability to drain connections and do a graceful shutdown.  
+
 
 ## Install
 
@@ -52,3 +54,8 @@ Or, just (without build flags)
 ```
 $ go build && ./postgres-api
 ```
+
+### References
+
+https://tylerchr.blog/golang-18-whats-coming/
+https://dave.cheney.net/2016/06/12/stack-traces-and-the-errors-package
