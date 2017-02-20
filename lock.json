@@ -1,30 +1,6 @@
 {
-    "memo": "0385f15aa05802d63a9ffb4e1fc9246a507a9b3def2aa172065eb287bc600742",
+    "memo": "5c03bc19522f8df1e37b9c3a485209aeb6e404866bd49174c4bf57cef817dc8e",
     "projects": [
-        {
-            "name": "github.com/codegangsta/negroni",
-            "branch": "master",
-            "revision": "61dbefc515b4dede6eb2de7df1e54d49edce892d",
-            "packages": [
-                "."
-            ]
-        },
-        {
-            "name": "github.com/gorilla/context",
-            "version": "v1.1",
-            "revision": "1ea25387ff6f684839d82767c1733ff4d4d15d0a",
-            "packages": [
-                "."
-            ]
-        },
-        {
-            "name": "github.com/gorilla/mux",
-            "branch": "master",
-            "revision": "94e7d24fd285520f3d12ae998f7fdd6b5393d453",
-            "packages": [
-                "."
-            ]
-        },
         {
             "name": "github.com/joeshaw/envdecode",
             "branch": "master",
@@ -59,8 +35,16 @@
         },
         {
             "name": "github.com/pkg/errors",
-            "version": "v0.8.0",
-            "revision": "645ef00459ed84a119197bfb8d8205042c6df63d",
+            "branch": "master",
+            "revision": "248dadf4e9068a0b3e79f02ed0a610d935de5302",
+            "packages": [
+                "."
+            ]
+        },
+        {
+            "name": "github.com/urfave/negroni",
+            "version": "v0.2.0",
+            "revision": "fde5e16d32adc7ad637e9cd9ad21d4ebc6192535",
             "packages": [
                 "."
             ]
