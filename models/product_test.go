@@ -10,6 +10,8 @@ import (
 	"github.com/pkg/errors"
 )
 
+// TODO this should use the API package.
+
 // App struct exposes references to the router, server, database
 // and configuration that the application uses.
 type App struct {
@@ -202,7 +204,7 @@ func TestPost(t *testing.T) {
 	initialize()
 	defer a.DB.Close()
 
-	new := Product{ID: 1, Name: "hello kitty", Price: 14.99}
+	new := Product{Name: "hello kitty", Price: 14.99}
 
 	new.EnsureTableExists(a.DB)
 	new.ClearTable(a.DB)

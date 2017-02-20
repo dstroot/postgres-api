@@ -1,3 +1,26 @@
+// The MIT License (MIT)
+//
+// Copyright (c) 2017 Daniel J. Stroot
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+// THE SOFTWARE.
+
+// Package model contains our API models
 package model
 
 import (
@@ -108,7 +131,7 @@ func (p *Product) ClearTable(db *sql.DB) error {
 	if _, err := db.Exec("DELETE FROM products"); err != nil {
 		return err
 	}
-	if _, err := db.Exec("ALTER SEQUENCE products_id_seq RESTART WITH 1"); err != nil {
+	if _, err := db.Exec("ALTER SEQUENCE products_id_seq RESTART WITH 0"); err != nil {
 		return err
 	}
 	return nil
@@ -122,7 +145,7 @@ func (p *Product) AddTestData(db *sql.DB, count int) error {
 
 	var err error
 	for i := 0; i < count; i++ {
-		_, err = db.Exec("INSERT INTO products(name, price) VALUES($1, $2)", "Product "+strconv.Itoa(i), (i+1.0)*10)
+		_, err = db.Exec("INSERT INTO products(name, price) VALUES($1, $2)", "Product "+strconv.Itoa(i+1), (i+1.0)*10)
 		if err != nil {
 			return err
 		}
