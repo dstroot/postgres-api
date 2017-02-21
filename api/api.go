@@ -67,35 +67,35 @@ type config struct {
 }
 
 // Initialize will populate the configuration, connect to the database,
-// and instantiate the router and server
-func (a *App) Initialize() (err error) {
+// and instantiate the router and server and then return an app.
+func Initialize() (app App, err error) {
 
 	// Read configuration from env variables
-	err = env.Decode(&a.Cfg)
+	err = env.Decode(&app.Cfg)
 	if err != nil {
-		return errors.Wrap(err, "configuration decode failed")
+		return app, errors.Wrap(err, "configuration decode failed")
 	}
 
 	// configure hostame
-	a.Cfg.HostName, _ = os.Hostname()
+	app.Cfg.HostName, _ = os.Hostname()
 
 	// Log configuration for debugging
-	if a.Cfg.Debug {
-		prettyCfg, _ := json.MarshalIndent(a.Cfg, "", "  ")
+	if app.Cfg.Debug {
+		prettyCfg, _ := json.MarshalIndent(app.Cfg, "", "  ")
 		log.Printf("Configuration: \n%v", string(prettyCfg))
 	}
 
-	connString := "postgres://" + a.Cfg.SQL.User +
-		":" + a.Cfg.SQL.Password +
-		"@" + a.Cfg.SQL.Host +
-		":" + a.Cfg.SQL.Port +
-		"/" + a.Cfg.SQL.Database +
+	connString := "postgres://" + app.Cfg.SQL.User +
+		":" + app.Cfg.SQL.Password +
+		"@" + app.Cfg.SQL.Host +
+		":" + app.Cfg.SQL.Port +
+		"/" + app.Cfg.SQL.Database +
 		"?sslmode=disable"
 
 	// Connect to the database
-	a.DB, err = sql.Open("postgres", connString)
+	app.DB, err = sql.Open("postgres", connString)
 	if err != nil {
-		return errors.Wrap(err, "database connection failed")
+		return app, errors.Wrap(err, "database connection failed")
 	}
 
 	// The first actual connection to the underlying datastore will be
@@ -103,12 +103,12 @@ func (a *App) Initialize() (err error) {
 	// to check right away that the database is available and accessible
 	// (for example, check that you can establish a network connection and log
 	// in), use database.DB.Ping().
-	err = a.DB.Ping()
+	err = app.DB.Ping()
 	if err != nil {
-		return errors.Wrap(err, "error pinging database")
+		return app, errors.Wrap(err, "error pinging database")
 	}
 
-	if a.Cfg.Debug {
+	if app.Cfg.Debug {
 		log.Printf("Connection: %s\n", connString)
 	}
 
@@ -116,7 +116,7 @@ func (a *App) Initialize() (err error) {
 	 * Router
 	 */
 
-	a.Router = httprouter.New()
+	app.Router = httprouter.New()
 
 	/**
 	 * Negroni Middleware Stack
@@ -125,14 +125,14 @@ func (a *App) Initialize() (err error) {
 	n := negroni.New()
 	n.Use(negroni.NewRecovery())
 	n.Use(negroni.NewLogger())
-	n.UseHandler(a.Router)
+	n.UseHandler(app.Router)
 
 	/**
 	 * Server
 	 */
 
-	a.Server = &http.Server{
-		Addr:           ":" + a.Cfg.Port,
+	app.Server = &http.Server{
+		Addr:           ":" + app.Cfg.Port,
 		Handler:        n, // pass router
 		ReadTimeout:    5 * time.Second,
 		WriteTimeout:   10 * time.Second,
@@ -140,5 +140,5 @@ func (a *App) Initialize() (err error) {
 		MaxHeaderBytes: 1 << 20,
 	}
 
-	return nil
+	return app, nil
 }
