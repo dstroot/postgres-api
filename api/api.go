@@ -32,7 +32,6 @@ import (
 	"time"
 
 	env "github.com/joeshaw/envdecode"
-
 	"github.com/urfave/negroni"
 	// Load environment vars
 	_ "github.com/joho/godotenv/autoload"
@@ -70,6 +69,10 @@ type config struct {
 // and instantiate the router and server and then return an app.
 func Initialize() (app App, err error) {
 
+	/**
+	 * Configuration
+	 */
+
 	// Read configuration from env variables
 	err = env.Decode(&app.Cfg)
 	if err != nil {
@@ -84,6 +87,10 @@ func Initialize() (app App, err error) {
 		prettyCfg, _ := json.MarshalIndent(app.Cfg, "", "  ")
 		log.Printf("Configuration: \n%v", string(prettyCfg))
 	}
+
+	/**
+	 * Database
+	 */
 
 	connString := "postgres://" + app.Cfg.SQL.User +
 		":" + app.Cfg.SQL.Password +

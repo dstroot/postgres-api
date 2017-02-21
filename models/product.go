@@ -131,7 +131,7 @@ func (p *Product) ClearTable(db *sql.DB) error {
 	if _, err := db.Exec("DELETE FROM products"); err != nil {
 		return err
 	}
-	if _, err := db.Exec("ALTER SEQUENCE products_id_seq RESTART WITH 0"); err != nil {
+	if _, err := db.Exec("ALTER SEQUENCE products_id_seq RESTART WITH 1"); err != nil {
 		return err
 	}
 	return nil
@@ -145,7 +145,7 @@ func (p *Product) AddTestData(db *sql.DB, count int) error {
 
 	var err error
 	for i := 0; i < count; i++ {
-		_, err = db.Exec("INSERT INTO products(name, price) VALUES($1, $2)", "Product "+strconv.Itoa(i+1), (i+1.0)*10)
+		_, err = db.Exec("INSERT INTO products(name, price) VALUES($1, $2)", "Product "+strconv.Itoa(i+1), float32(i+1.0)*1.99)
 		if err != nil {
 			return err
 		}
