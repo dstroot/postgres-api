@@ -20,9 +20,9 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-// Package handler contains our route handlers.  It uses the models
+// Package handlers contains our route handlers.  It uses the models
 // package.
-package handler
+package handlers
 
 import (
 	"database/sql"

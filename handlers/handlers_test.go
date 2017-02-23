@@ -1,26 +1,41 @@
-package handler
+package handlers
 
 import (
+	"log"
 	"net/http"
 	"net/http/httptest"
 	"testing"
 
 	"github.com/dstroot/postgres-api/api"
-	// handler "github.com/dstroot/postgres-api/handlers"
 	model "github.com/dstroot/postgres-api/models"
+	// handler "github.com/dstroot/postgres-api/handlers"
 )
 
 // https://elithrar.github.io/article/testing-http-handlers-go/
+// https://www.thepolyglotdeveloper.com/2017/02/unit-testing-golang-application-includes-http/
+
+var a api.App
+
+func router() {
+
+	var err error
+	a, err = api.Initialize()
+	if err != nil {
+		log.Fatalf("Expected clean initialization. Got %s", err.Error())
+	}
+
+	a.Router.GET("/products", GetProducts(a.DB))
+	a.Router.POST("/product", CreateProduct(a.DB))
+	a.Router.GET("/product/:id", GetProduct(a.DB))
+	a.Router.PUT("/product/:id", UpdateProduct(a.DB))
+	a.Router.DELETE("/product/:id", DeleteProduct(a.DB))
+}
 
 func TestGetProducts(t *testing.T) {
 
 	// This test deletes all records from the products table and sends a GET request to the /products end point. We use the executeRequest function to execute the request. We then use the checkResponseCode function to test that the HTTP response code is what we expect. Finally, we check the body of the response and test that it is the textual representation of an empty array.
 
-	// Initialize app
-	a, err := api.Initialize()
-	if err != nil {
-		t.Errorf("Expected clean initialization. Got %s", err.Error())
-	}
+	router()
 	defer a.DB.Close()
 
 	p := model.Product{}
@@ -28,31 +43,28 @@ func TestGetProducts(t *testing.T) {
 
 	// Create a request to pass to our handler. We don't have any parameters for now, so we'll
 	// pass 'nil' as the third parameter.
-	req, err := http.NewRequest("GET", "/products", nil)
-	if err != nil {
-		t.Fatal(err)
-	}
+	req, _ := http.NewRequest("GET", "/products", nil)
 
 	// We create a ResponseRecorder (which satisfies
 	// http.ResponseWriter) to record the response.
-	rr := httptest.NewRecorder()
+	res := httptest.NewRecorder()
 
 	// Call the routers ServeHTTP method directly and pass in
 	// our Request and ResponseRecorder.
-	a.Router.ServeHTTP(rr, req)
+	a.Router.ServeHTTP(res, req)
 
 	// Check the status code is what we expect.
-	if status := rr.Code; status != http.StatusOK {
+	if status := res.Code; status != http.StatusOK {
 		t.Errorf("handler returned wrong status code: got %v want %v",
 			status, http.StatusOK)
 	}
 
-	// // Check the response body is what we expect.
-	// expected := `{"alive": true}`
-	// if rr.Body.String() != expected {
-	// 	t.Errorf("handler returned unexpected body: got %v want %v",
-	// 		rr.Body.String(), expected)
-	// }
+	// Check the response body is what we expect.
+	expected := "[]"
+	if res.Body.String() != expected {
+		t.Errorf("handler returned unexpected body: got %v want %v",
+			res.Body.String(), expected)
+	}
 	//
 	//
 	//
@@ -90,7 +102,7 @@ func TestGetProducts(t *testing.T) {
 	// 	t.Errorf("Expected the 'error' key of the response to be set to 'sql: database is closed'. Got '%s'", m["error"])
 	// }
 	//
-	a.DB.Close()
+	// a.DB.Close()
 }
 
 // func TestGetProduct(t *testing.T) {
@@ -402,10 +414,10 @@ func TestGetProducts(t *testing.T) {
 //
 // 	return rr
 // }
-//
-// // checkResponseCode validates the correct HTML response code
-// func checkResponseCode(t *testing.T, expected, actual int) {
-// 	if expected != actual {
-// 		t.Errorf("Expected response code %d. Got %d\n", expected, actual)
-// 	}
-// }
+
+// checkResponseCode validates the correct HTML response code
+func checkResponseCode(t *testing.T, expected, actual int) {
+	if expected != actual {
+		t.Errorf("Expected response code %d. Got %d\n", expected, actual)
+	}
+}
