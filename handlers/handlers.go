@@ -45,9 +45,6 @@ import (
 // If the product is not found, the handler responds with a status code of 404,
 // indicating that the requested resource could not be found. If the product
 // is found, the handler responds with the product.
-//
-// This method uses respondWithError and respondWithJSON functions to
-// process errors and normal responses. These functions can be implemented as follows:
 func GetProduct(db *sql.DB) httprouter.Handle {
 	return func(w http.ResponseWriter, r *http.Request, param httprouter.Params) {
 		id, err := strconv.Atoi(param.ByName("id"))
