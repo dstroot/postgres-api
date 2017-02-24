@@ -8,7 +8,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/dstroot/postgres-api/api"
+	"github.com/dstroot/postgres-api/app"
 	model "github.com/dstroot/postgres-api/models"
 )
 
@@ -16,9 +16,9 @@ import (
 // https://www.thepolyglotdeveloper.com/2017/02/unit-testing-golang-application-includes-http/
 
 // initialize will return an initialized app
-func initialize() (a api.App) {
+func initialize() (a app.App) {
 	var err error
-	a, err = api.Initialize()
+	a, err = app.Initialize()
 	if err != nil {
 		log.Fatalf("Expected clean initialization. Got %s", err.Error())
 	}
@@ -413,7 +413,7 @@ func TestDeleteProduct(t *testing.T) {
 
 // This function executes the request using the application's router
 // and returns the response.
-func executeRequest(a api.App, req *http.Request) (res *httptest.ResponseRecorder) {
+func executeRequest(a app.App, req *http.Request) (res *httptest.ResponseRecorder) {
 
 	// We create a ResponseRecorder (which satisfies
 	// http.ResponseWriter) to record the response.

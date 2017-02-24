@@ -20,8 +20,8 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-// Package api contains our application and initialization function.
-package api
+// Package app contains our application and initialization function.
+package app
 
 import (
 	"database/sql"
@@ -31,6 +31,9 @@ import (
 	"os"
 	"time"
 
+	"github.com/didip/tollbooth"
+	"github.com/didip/tollbooth/thirdparty/tollbooth_negroni"
+	"github.com/dstroot/postgres-api/middleware/connlimit"
 	env "github.com/joeshaw/envdecode"
 	"github.com/urfave/negroni"
 	// Load environment vars
@@ -129,9 +132,14 @@ func Initialize() (app App, err error) {
 	 * Negroni Middleware Stack
 	 */
 
+	// Create a rate limiter struct.
+	limiter := tollbooth.NewLimiter(100, time.Second)
+
 	n := negroni.New()
 	n.Use(negroni.NewRecovery())
 	n.Use(negroni.NewLogger())
+	n.Use(tollbooth_negroni.LimitHandler(limiter))
+	n.Use(connlimit.MaxAllowed(10))
 	n.UseHandler(app.Router)
 
 	/**

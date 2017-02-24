@@ -1,6 +1,14 @@
 {
-    "memo": "5c03bc19522f8df1e37b9c3a485209aeb6e404866bd49174c4bf57cef817dc8e",
+    "memo": "9bbadb9c792e6847127d65d995a180b247425bc9af1073f0b9457e4e0219666a",
     "projects": [
+        {
+            "name": "github.com/didip/tollbooth",
+            "branch": "master",
+            "revision": "0587adcf612f2cc33e88eb2f216949425e4cef27",
+            "packages": [
+                "."
+            ]
+        },
         {
             "name": "github.com/joeshaw/envdecode",
             "branch": "master",
@@ -47,6 +55,22 @@
             "revision": "fde5e16d32adc7ad637e9cd9ad21d4ebc6192535",
             "packages": [
                 "."
+            ]
+        },
+        {
+            "name": "golang.org/x/net",
+            "branch": "master",
+            "revision": "10c134ea0df15f7e34d789338c7a2d76cc7a3ab9",
+            "packages": [
+                "context"
+            ]
+        },
+        {
+            "name": "golang.org/x/time",
+            "branch": "master",
+            "revision": "f51c12702a4d776e4c1fa9b0fabab841babae631",
+            "packages": [
+                "rate"
             ]
         }
     ]

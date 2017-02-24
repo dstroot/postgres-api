@@ -24,12 +24,12 @@
 package routes
 
 import (
-	"github.com/dstroot/postgres-api/api"
+	"github.com/dstroot/postgres-api/app"
 	"github.com/dstroot/postgres-api/handlers"
 )
 
 // InitializeRoutes intializes our routes
-func InitializeRoutes(a api.App) {
+func InitializeRoutes(a app.App) {
 	a.Router.GET("/products", handlers.GetProducts(a.DB))
 	a.Router.POST("/product", handlers.CreateProduct(a.DB))
 	a.Router.GET("/product/:id", handlers.GetProduct(a.DB))
