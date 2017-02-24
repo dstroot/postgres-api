@@ -30,9 +30,9 @@ import (
 
 // InitializeRoutes intializes our routes
 func InitializeRoutes(a api.App) {
-	a.Router.GET("/products", handler.GetProducts(a.DB))
-	a.Router.POST("/product", handler.CreateProduct(a.DB))
-	a.Router.GET("/product/:id", handler.GetProduct(a.DB))
-	a.Router.PUT("/product/:id", handler.UpdateProduct(a.DB))
-	a.Router.DELETE("/product/:id", handler.DeleteProduct(a.DB))
+	a.Router.GET("/products", handlers.GetProducts(a.DB))
+	a.Router.POST("/product", handlers.CreateProduct(a.DB))
+	a.Router.GET("/product/:id", handlers.GetProduct(a.DB))
+	a.Router.PUT("/product/:id", handlers.UpdateProduct(a.DB))
+	a.Router.DELETE("/product/:id", handlers.DeleteProduct(a.DB))
 }
