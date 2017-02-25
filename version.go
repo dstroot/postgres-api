@@ -29,17 +29,14 @@ func formattedVersion() string {
 	var versionString bytes.Buffer
 
 	fmt.Fprintf(&versionString, "Running: %s\n", name)
+	fmt.Fprintf(&versionString, "  - Built with %s\n", gver)
 
-	if gver != "" {
-		fmt.Fprintf(&versionString, "  - Built with %s\n", gver)
+	if commit != "" {
+		fmt.Fprintf(&versionString, "  - Commit %s\n", commit)
 	}
 
 	if buildstamp != "" {
 		fmt.Fprintf(&versionString, "  - Built at %s\n", buildstamp)
-	}
-
-	if commit != "" {
-		fmt.Fprintf(&versionString, "  - Commit: %s\n", commit)
 	}
 
 	return versionString.String()

@@ -25,9 +25,11 @@ package routes
 
 import (
 	"encoding/json"
+	"net/http"
 
 	"github.com/dstroot/postgres-api/app"
 	"github.com/dstroot/postgres-api/handlers"
+	"github.com/julienschmidt/httprouter"
 )
 
 // InitializeRoutes intializes our routes
@@ -38,8 +40,23 @@ func InitializeRoutes(a app.App) {
 	a.Router.PUT("/product/:id", handlers.UpdateProduct(a.DB))
 	a.Router.DELETE("/product/:id", handlers.DeleteProduct(a.DB))
 
-	cfg, _ := json.MarshalIndent(a.Cfg, "", "  ")
-	a.Router.GET("/config", handlers.GetConfig(cfg))
+	a.Router.GET("/config", func(w http.ResponseWriter, _ *http.Request, _ httprouter.Params) {
+		w.Header().Set("Content-Type", "application/json; charset=utf-8")
+		s, err := json.MarshalIndent(a.Cfg, "", "  ")
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+		}
+		w.Write(s)
+	})
+
+	a.Router.GET("/stats", func(w http.ResponseWriter, _ *http.Request, _ httprouter.Params) {
+		w.Header().Set("Content-Type", "application/json; charset=utf-8")
+		s, err := json.MarshalIndent(a.Stats.Data(), "", "  ")
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+		}
+		w.Write(s)
+	})
 }
 
 // TODO add health, status routes - basically standard stuff all

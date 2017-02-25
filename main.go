@@ -38,7 +38,7 @@ func run() error {
 	log.Printf("%s - %s", api.Cfg.HostName, formattedVersion())
 	log.Printf("%s - Starting server on port %v...", api.Cfg.HostName, api.Cfg.Port)
 
-	// Run app server
+	// Run API server
 	go func() {
 		errChan <- api.Server.ListenAndServe()
 	}()

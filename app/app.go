@@ -25,8 +25,6 @@ package app
 
 import (
 	"database/sql"
-	"encoding/json"
-	"log"
 	"net/http"
 	"os"
 	"time"
@@ -51,6 +49,7 @@ type App struct {
 	Router *httprouter.Router
 	DB     *sql.DB
 	Server *http.Server
+	Stats  *stats.Stats
 	Cfg    config
 }
 
@@ -86,12 +85,6 @@ func Initialize() (app App, err error) {
 	// configure hostame
 	app.Cfg.HostName, _ = os.Hostname()
 
-	// Log configuration for debugging
-	if app.Cfg.Debug {
-		prettyCfg, _ := json.MarshalIndent(app.Cfg, "", "  ")
-		log.Printf("Configuration: \n%v", string(prettyCfg))
-	}
-
 	/**
 	 * Database
 	 */
@@ -119,10 +112,6 @@ func Initialize() (app App, err error) {
 		return app, errors.Wrap(err, "error pinging database")
 	}
 
-	if app.Cfg.Debug {
-		log.Printf("Connection: %s\n", connString)
-	}
-
 	/**
 	 * Router
 	 */
@@ -133,36 +122,22 @@ func Initialize() (app App, err error) {
 	 * Negroni Middleware Stack
 	 */
 
-	// TODO if you wanted to you could add stats to the app struct
-	// and move the handler and route below into handlers and routes
-	// but this is pretty simple as is. I just don't like not having
-	// the app routes all in one place.
-
-	// setup stats https://github.com/thoas/stats
-	s := stats.New()
-	app.Router.GET("/stats", func(w http.ResponseWriter, _ *http.Request, _ httprouter.Params) {
-		w.Header().Set("Content-Type", "application/json; charset=utf-8")
-		s, err := json.MarshalIndent(s.Data(), "", "  ")
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-		}
-		w.Write(s)
-	})
-
 	// Standard stack, recovery and logging
 	n := negroni.New()
 	n.Use(negroni.NewRecovery())
 	n.Use(negroni.NewLogger())
 
-	// Create a rate limiter struct.
-	limiter := tollbooth.NewLimiter(100, time.Second)
-	n.Use(tollbooth_negroni.LimitHandler(limiter))
+	// setup stats https://github.com/thoas/stats
+	app.Stats = stats.New()
+	n.Use(app.Stats)
 
 	// Connections limiter
-	n.Use(connlimit.MaxAllowed(10))
+	// Manage connections before rate?
+	n.Use(connlimit.MaxAllowed(50))
 
-	// report stats
-	n.Use(s)
+	// Rate limiter
+	limiter := tollbooth.NewLimiter(50, time.Second)
+	n.Use(tollbooth_negroni.LimitHandler(limiter))
 
 	n.UseHandler(app.Router)
 
@@ -172,10 +147,10 @@ func Initialize() (app App, err error) {
 
 	app.Server = &http.Server{
 		Addr:           ":" + app.Cfg.Port,
-		Handler:        n, // pass router
+		Handler:        n, // pass in router
 		ReadTimeout:    5 * time.Second,
 		WriteTimeout:   10 * time.Second,
-		IdleTimeout:    120 * time.Second, // Go 1.8
+		IdleTimeout:    120 * time.Second,
 		MaxHeaderBytes: 1 << 20,
 	}
 
