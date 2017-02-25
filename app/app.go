@@ -35,6 +35,7 @@ import (
 	"github.com/didip/tollbooth/thirdparty/tollbooth_negroni"
 	"github.com/dstroot/postgres-api/middleware/connlimit"
 	env "github.com/joeshaw/envdecode"
+	"github.com/thoas/stats"
 	"github.com/urfave/negroni"
 	// Load environment vars
 	_ "github.com/joho/godotenv/autoload"
@@ -132,14 +133,37 @@ func Initialize() (app App, err error) {
 	 * Negroni Middleware Stack
 	 */
 
-	// Create a rate limiter struct.
-	limiter := tollbooth.NewLimiter(100, time.Second)
+	// TODO if you wanted to you could add stats to the app struct
+	// and move the handler and route below into handlers and routes
+	// but this is pretty simple as is. I just don't like not having
+	// the app routes all in one place.
 
+	// setup stats https://github.com/thoas/stats
+	s := stats.New()
+	app.Router.GET("/stats", func(w http.ResponseWriter, _ *http.Request, _ httprouter.Params) {
+		w.Header().Set("Content-Type", "application/json; charset=utf-8")
+		s, err := json.MarshalIndent(s.Data(), "", "  ")
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+		}
+		w.Write(s)
+	})
+
+	// Standard stack, recovery and logging
 	n := negroni.New()
 	n.Use(negroni.NewRecovery())
 	n.Use(negroni.NewLogger())
+
+	// Create a rate limiter struct.
+	limiter := tollbooth.NewLimiter(100, time.Second)
 	n.Use(tollbooth_negroni.LimitHandler(limiter))
+
+	// Connections limiter
 	n.Use(connlimit.MaxAllowed(10))
+
+	// report stats
+	n.Use(s)
+
 	n.UseHandler(app.Router)
 
 	/**

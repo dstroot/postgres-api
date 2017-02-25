@@ -166,6 +166,17 @@ func DeleteProduct(db *sql.DB) httprouter.Handle {
 	}
 }
 
+// GetConfig extracts the id from the requested URL and uses it to delete
+// the corresponding product from the database.
+func GetConfig(s []byte) httprouter.Handle {
+	return func(w http.ResponseWriter, r *http.Request, param httprouter.Params) {
+
+		// prettyCfg, _ := json.MarshalIndent(app.Cfg, "", "  ")
+
+		w.Write(s)
+	}
+}
+
 func respondWithError(w http.ResponseWriter, code int, message string) {
 	respondWithJSON(w, code, map[string]string{"error": message})
 }

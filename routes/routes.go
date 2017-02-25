@@ -24,6 +24,8 @@
 package routes
 
 import (
+	"encoding/json"
+
 	"github.com/dstroot/postgres-api/app"
 	"github.com/dstroot/postgres-api/handlers"
 )
@@ -35,4 +37,16 @@ func InitializeRoutes(a app.App) {
 	a.Router.GET("/product/:id", handlers.GetProduct(a.DB))
 	a.Router.PUT("/product/:id", handlers.UpdateProduct(a.DB))
 	a.Router.DELETE("/product/:id", handlers.DeleteProduct(a.DB))
+
+	cfg, _ := json.MarshalIndent(a.Cfg, "", "  ")
+	a.Router.GET("/config", handlers.GetConfig(cfg))
 }
+
+// TODO add health, status routes - basically standard stuff all
+// apps should have. Also prometheus metrics. Ideas:
+//  - health
+//  - metrics
+//  - config
+//  - ping
+//  - version
+//	- etc.

@@ -1,12 +1,13 @@
 {
-    "memo": "9bbadb9c792e6847127d65d995a180b247425bc9af1073f0b9457e4e0219666a",
+    "memo": "a9897ccd80de472bc6896bf3a30d1a3c28189e9b37c9c55d39a4fea03be51b4d",
     "projects": [
         {
             "name": "github.com/didip/tollbooth",
             "branch": "master",
             "revision": "0587adcf612f2cc33e88eb2f216949425e4cef27",
             "packages": [
-                "."
+                ".",
+                "thirdparty/tollbooth_negroni"
             ]
         },
         {
@@ -45,6 +46,14 @@
             "name": "github.com/pkg/errors",
             "branch": "master",
             "revision": "248dadf4e9068a0b3e79f02ed0a610d935de5302",
+            "packages": [
+                "."
+            ]
+        },
+        {
+            "name": "github.com/thoas/stats",
+            "branch": "master",
+            "revision": "152b5d051953fdb6e45f14b6826962aadc032324",
             "packages": [
                 "."
             ]
