@@ -20,8 +20,6 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-// Package main initializes the application and runs it using go1.8
-// features to stop it gracefully and allow connections to drain.
 package main
 
 import (
