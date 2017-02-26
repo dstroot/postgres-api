@@ -34,6 +34,7 @@ import (
 
 // InitializeRoutes intializes our routes
 func InitializeRoutes(a app.App) {
+
 	a.Router.GET("/products", handlers.GetProducts(a.DB))
 	a.Router.POST("/product", handlers.CreateProduct(a.DB))
 	a.Router.GET("/product/:id", handlers.GetProduct(a.DB))
@@ -57,13 +58,8 @@ func InitializeRoutes(a app.App) {
 		}
 		w.Write(s)
 	})
-}
 
-// TODO add health, status routes - basically standard stuff all
-// apps should have. Also prometheus metrics. Ideas:
-//  - health
-//  - metrics
-//  - config
-//  - ping
-//  - version
-//	- etc.
+	a.Router.GET("/health", func(w http.ResponseWriter, _ *http.Request, _ httprouter.Params) {
+		w.Write([]byte("."))
+	})
+}
